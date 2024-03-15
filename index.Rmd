@@ -19,7 +19,137 @@ library(ggplot2)
 library(compmus)
 ```
 
-Assignment Week 10:
+Assignment Week 11:
+======================================================================
+
+Introduction: {data-width=200}
+----------------------------------------------------------------------
+For this assignment I have created a graphical description of the Novelty Function and a 
+Tempogram for the songs:
+
+1) Data.Matrix (Ryoji Ikeda)
+
+2) Ocelot of Salvation (Immortal Onion)
+
+(Right side: Novelty Function; Left side: Tempogram)
+
+
+Novelty Function: {data-width=400, .tabset}
+----------------------------------------------------------------------
+
+### Song 1:
+
+```{r}
+# Data.Matrix
+
+d.m <-
+  get_tidy_audio_analysis("5ZmSq1xJbf1IptikZZgvJ6") |>
+  select(segments) |>
+  unnest(segments)
+
+d.m |>
+  mutate(loudness_max_time = start + loudness_max_time) |>
+  arrange(loudness_max_time) |>
+  mutate(delta_loudness = loudness_max - lag(loudness_max)) |>
+  ggplot(aes(x = loudness_max_time, y = pmax(0, delta_loudness))) +
+  geom_line() +
+  xlim(0, 30) +
+  theme_minimal() +
+  labs(x = "Time (s)", y = "Novelty")
+
+d.m |>
+  mutate(pitches = map(pitches, compmus_normalise, "clr")) |>
+  arrange(start) |>
+  mutate(pitches = map2(pitches, lag(pitches), `-`)) |>
+  slice(-1) |> 
+  compmus_gather_chroma() |> 
+  group_by(start, duration) |> 
+  summarise(novelty = sum(log1p(pmax(value, 0)))) |> 
+  ggplot(aes(x = start + duration / 2, y = novelty)) +
+  geom_line() +
+  xlim(0, 30) +
+  theme_minimal() +
+  labs(x = "Time (s)", y = "Novelty")
+
+```
+
+### Song 2: 
+
+```{r}
+# Ocelot of Salvation
+
+o.o.s <-
+  get_tidy_audio_analysis("7D4gttjv3ot3vuc8We5aVE") |>
+  select(segments) |>
+  unnest(segments)
+
+o.o.s |>
+  mutate(loudness_max_time = start + loudness_max_time) |>
+  arrange(loudness_max_time) |>
+  mutate(delta_loudness = loudness_max - lag(loudness_max)) |>
+  ggplot(aes(x = loudness_max_time, y = pmax(0, delta_loudness))) +
+  geom_line() +
+  xlim(0, 30) +
+  theme_minimal() +
+  labs(x = "Time (s)", y = "Novelty")
+
+o.o.s |>
+  mutate(pitches = map(pitches, compmus_normalise, "clr")) |>
+  arrange(start) |>
+  mutate(pitches = map2(pitches, lag(pitches), `-`)) |>
+  slice(-1) |> 
+  compmus_gather_chroma() |> 
+  group_by(start, duration) |> 
+  summarise(novelty = sum(log1p(pmax(value, 0)))) |> 
+  ggplot(aes(x = start + duration / 2, y = novelty)) +
+  geom_line() +
+  xlim(0, 30) +
+  theme_minimal() +
+  labs(x = "Time (s)", y = "Novelty")
+
+```
+
+Tempogram: {data-width=400, .tapset}
+=========================================================================
+
+### Song 1:
+
+```{r}
+
+kaka <- get_tidy_audio_analysis("5ZmSq1xJbf1IptikZZgvJ6")
+
+
+kaka |>
+  tempogram(window_size = 8, hop_size = 10, cyclic = FALSE) |>
+  ggplot(aes(x = time, y = bpm, fill = power)) +
+  geom_raster() +
+  scale_fill_viridis_c(guide = "none") +
+  labs(x = "Time (s)", y = "Tempo (BPM)") +
+  theme_classic()
+
+```
+
+### Song 2:
+
+```{r}
+
+kaka2 <- get_tidy_audio_analysis("7D4gttjv3ot3vuc8We5aVE")
+
+
+kaka2 |>
+  tempogram(window_size = 8, hop_size = 1, cyclic = FALSE) |>
+  ggplot(aes(x = time, y = bpm, fill = power)) +
+  geom_raster() +
+  scale_fill_viridis_c(guide = "none") +
+  labs(x = "Time (s)", y = "Tempo (BPM)") +
+  theme_classic()
+```
+
+
+
+
+
+Week 10:
 ======================================================================
 
 Information {data-width=250}
